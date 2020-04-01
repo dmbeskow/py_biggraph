@@ -67,6 +67,44 @@ def preprocess_edge_file(file_name):
     outfile = 'data/' + PROJECT + '/edge.csv'
     print('Saving Edgelist to ', outfile)
     edge[['from','to']].to_csv(outfile, index = False)
+    
+#%%
+# Create Config File
+def MakeFile(file_name, ephochs):
+
+    lines = []
+    lines.append("entities_base = 'data/" + PROJECT + "'")
+    lines.append("def get_torchbiggraph_config():")
+    lines.append("    config = dict(")
+    lines.append("        # I/O data")
+    lines.append("        entity_path=entities_base,")
+    lines.append("        edge_paths=[],")
+    lines.append("        checkpoint_path='model/" + PROJECT + "',")
+    lines.append("        # Graph structure")
+    lines.append("        entities={")
+    lines.append("            'user_id': {'num_partitions': 1},")
+    lines.append("        },")
+    lines.append("        relations=[{")
+    lines.append("            'name': 'follow',")
+    lines.append("            'lhs': 'user_id',")
+    lines.append("            'rhs': 'user_id',")
+    lines.append("            'operator': 'none',")
+    lines.append("        }],")
+    lines.append("        # Scoring model")
+    lines.append("        dimension=1024,")
+    lines.append("        global_emb=False,")
+    lines.append("        # Training")
+    lines.append("        num_epochs=" + ephochs + ",")
+    lines.append("        lr=0.001,")
+    lines.append('        # Misc')
+    lines.append("        hogwild_delay=2,")
+    lines.append("    )")
+    lines.append('    return config')
+    
+    total_lines =     "\n".join(lines)
+    
+    with open(file_name, 'w') as f:
+        f.write(total_lines)
 # ----------------------------------------------------------------------------------------------------------------------
 # Helper functions, and constants
 
@@ -173,11 +211,33 @@ def main():
         if not any(s in fname for s in choices):
            parser.error("file doesn't end with one of {}".format(choices))
         return fname
-
-    parser.add_argument("file",help="File Path for Twitter or Edgefile'" , 
-                         type=lambda s:file_choices(["json","json.gz"],s))
+    parser.add_argument("--file",help="File Path for Twitter or Edgefile'" , 
+                         type=lambda s:file_choices(["json","json.gz",'csv'],s))
+    parser.add_argument('--epochs', '--Number of Epochs', type=int,
+                    default=8, help='Number of Epochs')
     args=parser.parse_args()
     print(args)
+    
+    if 'json' in args.file:
+        preprocess_twitter(args.file)
+    elif 'csv' in args.file:
+        preprocess_edge_file(args.file)
+    else:
+        exit('File must be Twitter JSON or CSV Edgelist')
+        
+    if not os.path.exists('data'):
+        os.makedirs('data')
+        
+    if not os.path.exists('data/' + PROJECT):
+        os.makedirs('data/' + PROJECT)
+        
+    if not os.path.exists('model'):
+        os.makedirs('model')
+        
+    if not os.path.exists('model/' + PROJECT):
+        os.makedirs('model/' + PROJECT)
+        
+    MakeFile('config.py', epochs = args.epochs)
     
     run_train_eval()
 
