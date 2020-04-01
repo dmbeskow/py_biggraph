@@ -187,7 +187,7 @@ def run_train_eval():
 
     do_eval(eval_config)
 
-def output_embedding():
+def output_embedding(epochs):
     with open(os.path.join(DATA_DIR, "dictionary.json"), "rt") as tf:
         dictionary = json.load(tf)
 
@@ -195,7 +195,7 @@ def output_embedding():
     offset = dictionary["entities"]["user_id"].index(user_id)
     print("our offset for user_id ", user_id, " is: ", offset)
 
-    with h5py.File("model/" + PROJECT + "/embeddings_user_id_0.v10.h5", "r") as hf:
+    with h5py.File("model/" + PROJECT + "/embeddings_user_id_0.v" + str(epochs) + ".h5", "r") as hf:
         embedding = hf["embeddings"][offset, :]
 
     print(f" our embedding looks like this: {embedding}")
@@ -243,7 +243,7 @@ def main():
     
     run_train_eval()
 
-    output_embedding()
+    output_embedding(args.epochs)
 
 if __name__ == "__main__":
     main()
