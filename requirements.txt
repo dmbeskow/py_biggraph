@@ -1,0 +1,8 @@
+attrs==19.1.0
+h5py==2.9.0
+numpy==1.17.0
+pkg-resources==0.0.0
+six==1.12.0
+torch==1.2.0
+torchbiggraph==1.dev1
+tqdm==4.33.0
