@@ -45,7 +45,7 @@ def preprocess_twitter(file_name):
     edge = pd.merge(edge, lookup)
     outfile = 'data/' + PROJECT + '/edge.csv'
     print('Saving Edgelist to ', outfile)
-    edge[['from','to']].to_csv(outfile, index = False)
+    edge[['from','to']].to_csv(outfile, sep = ' ',index = False, header = False)
     
 # My Edgelist Preprocess
 def preprocess_edge_file(file_name):
@@ -66,11 +66,11 @@ def preprocess_edge_file(file_name):
     edge = pd.merge(edge, lookup)
     outfile = 'data/' + PROJECT + '/edge.csv'
     print('Saving Edgelist to ', outfile)
-    edge[['from','to']].to_csv(outfile, index = False)
+    edge[['from','to']].to_csv(outfile,, sep = ' ',index = False, header = False)
     
 #%%
 # Create Config File
-def MakeFile(file_name, ephochs):
+def MakeFile(file_name, epochs):
 
     lines = []
     lines.append("entities_base = 'data/" + PROJECT + "'")
@@ -94,7 +94,7 @@ def MakeFile(file_name, ephochs):
     lines.append("        dimension=1024,")
     lines.append("        global_emb=False,")
     lines.append("        # Training")
-    lines.append("        num_epochs=" + ephochs + ",")
+    lines.append("        num_epochs=" + str(epochs) + ",")
     lines.append("        lr=0.001,")
     lines.append('        # Misc')
     lines.append("        hogwild_delay=2,")
@@ -218,13 +218,7 @@ def main():
     args=parser.parse_args()
     print(args)
     
-    if 'json' in args.file:
-        preprocess_twitter(args.file)
-    elif 'csv' in args.file:
-        preprocess_edge_file(args.file)
-    else:
-        exit('File must be Twitter JSON or CSV Edgelist')
-        
+       
     if not os.path.exists('data'):
         os.makedirs('data')
         
@@ -238,6 +232,14 @@ def main():
         os.makedirs('model/' + PROJECT)
         
     MakeFile('config.py', epochs = args.epochs)
+    
+    if 'json' in args.file:
+        preprocess_twitter(args.file)
+    elif 'csv' in args.file:
+        preprocess_edge_file(args.file)
+    else:
+        exit('File must be Twitter JSON or CSV Edgelist')
+ 
     
     run_train_eval()
 
